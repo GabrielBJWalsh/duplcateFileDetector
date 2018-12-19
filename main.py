@@ -1,6 +1,23 @@
 # #!/usr/bin/env python
-import hashlib, os, sys,pandas as pd
+import hashlib, os, sys, pandas as pd
 
+"""
+finds the sup directory's of a given file leaves out files
+"""
+
+
+def directoryFinder(dir):
+    files = os.listdir(dir)
+    listOfDirrectorys = []
+
+    for i in files:
+
+        if os.path.isdir(os.path.join(dir, i)):
+            listOfDirrectorys.append(i)
+        else:
+            continue
+
+    return listOfDirrectorys
 
 
 """creates a md5 hash of a file"""
@@ -33,6 +50,7 @@ puts redundant files in a dictionary with its copy
 
 
 def dirChecker(dir):
+    #
     files = os.listdir(dir)
     redundantFiles = {}
     for name in files:
@@ -45,23 +63,32 @@ def dirChecker(dir):
     return redundantFiles
 
 
+
+
 """
-takes a dictionary and makes an excel file out of it
+creates a dictonary with the the file name as key and hash as value. uses recursion to dive into sub directory's 
+
 """
-
-
-def dictionaryToExel(dictonary):
-    pass
-
-
-"""creates a dictonary with the the file name as key and hash as value"""
 
 
 def hashDictonary(dir):
     files = os.listdir(dir)
+    subDirectroys = directoryFinder(dir)
     dirDictonary = {}
+    count =0
     for name in files:
-        dirDictonary[name] = fileHasher(os.path.join(dir, name))
+        #print("loop number",count,dirDictonary)
+        count+=1
+        if name in subDirectroys:
+            subDictornary=hashDictonary(os.path.join(dir,name))
+           # print(subDictornary)
+            for i in subDictornary:
+               # print(i)
+                #print(subDictornary[i])
+                dirDictonary[i]=subDictornary[i]
+
+        else:dirDictonary[name] = fileHasher(os.path.join(dir, name))
+        #dirDictonary[os.path.join(dir, name)] = fileHasher(os.path.join(dir, name))
 
     return dirDictonary
 
@@ -73,43 +100,36 @@ finds redundant files in a directory and creates a diconary of the files name/pa
 
 def dirCompair(dir):
     hash = hashDictonary(dir)
-    result ={}
+    result = {}
     for i in hash:
         for j in hash:
-            if i==j:
+            if i == j:
                 continue
-            elif hash[i]==hash[j] and i not in result.values():
-                result[i]=j
-
+            elif hash[i] == hash[j] and i not in result.values():
+                result[i] = j
 
     return result
+
+
 """
 puts a dictonary into a excel file
 """
-def dictonaryToExcel(result):
-    df = pd.DataFrame
-    reFrame = pd.DataFrame()
-    df = df.from_dict(result, "index")
 
-    print(df)
+
+def dictonaryToExcel(dictToBeExceled):
+    df = pd.DataFrame
+
+    df = df.from_dict(dictToBeExceled, "index")
     try:
         df.to_excel("duplicateFiles.xlsx")
     except Exception:
         print("please delete duplicates of duplcateFiles and try again")
 
 
-dir = "C:/Users/gbw76/Desktop/git/faceStuffForMOM/testcompare"
-# print(fileCompair("test1.txt","test2.txt"))
-# file1 = "C:/Users/gbw76/Desktop/git/faceStuffForMOM/me.jpg"
-# file2 = "C:/Users/gbw76/Desktop/git/faceStuffForMOM/notME.jpg"
-# print("HASH DICTIONARY")
-#print(hashDictonary(dir))
-# dir ="C:/Users/gbw76/Desktop/git/faceStuffForMOM/"
-# print("REDUNDANT DICTIONARY")
-# print("derChecker test",dirChecker(dir))
-# print(fileCompair("me.jpg","notME.jpg"))
-# print(fileHasher(file1))
-#print(dirCompair(dir))
+#dir = input("please provide the file path")
 
-
+dir = "C:/Users/gbw76/Desktop/git/duplcateFileDetector/testcompare"
+mesPath="C:/Users/gbw76/Desktop/git/duplcateFileDetector/testcompare/mes"
 dictonaryToExcel(dirCompair(dir))
+#hashDictonary(dir)
+#print(fileCompair(os.path.join(dir,"test2.txt"),os.path.join(mesPath,"test1.txt")))
